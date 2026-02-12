@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse, JSONResponse
 import os
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
@@ -82,28 +82,22 @@ def export_package(package_name: str = "activities_package"):
     Returns:
         JSON response containing the exported package with metadata
     """
-    try:
-        # Create package metadata
-        export_data = {
-            "package_name": package_name,
-            "export_timestamp": datetime.now().isoformat(),
-            "version": "1.0",
-            "format": "XMGR",
-            "total_activities": len(activities),
-            "activities": activities
+    # Create package metadata
+    export_data = {
+        "package_name": package_name,
+        "export_timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": "1.0",
+        "format": "XMGR",
+        "total_activities": len(activities),
+        "activities": activities
+    }
+    
+    # Return the package as JSON
+    return JSONResponse(
+        content=export_data,
+        status_code=200,
+        headers={
+            "X-Package-Name": package_name,
+            "X-Export-Format": "XMGR"
         }
-        
-        # Return the package as JSON
-        return JSONResponse(
-            content=export_data,
-            status_code=200,
-            headers={
-                "X-Package-Name": package_name,
-                "X-Export-Format": "XMGR"
-            }
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to export package: {str(e)}"
-        )
+    )
