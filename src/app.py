@@ -11,7 +11,6 @@ from fastapi.responses import RedirectResponse, JSONResponse
 import os
 from pathlib import Path
 from datetime import datetime
-import json
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
@@ -69,7 +68,7 @@ def signup_for_activity(activity_name: str, email: str):
     return {"message": f"Signed up {email} for {activity_name}"}
 
 
-@app.post("/xmgr/export-package")
+@app.get("/xmgr/export-package")
 def export_package(package_name: str = "activities_package"):
     """
     Export activities as a package using XMGR format.
@@ -99,7 +98,6 @@ def export_package(package_name: str = "activities_package"):
             content=export_data,
             status_code=200,
             headers={
-                "Content-Type": "application/json",
                 "X-Package-Name": package_name,
                 "X-Export-Format": "XMGR"
             }
