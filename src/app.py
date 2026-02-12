@@ -82,6 +82,13 @@ def export_package(package_name: str = "activities_package"):
     Returns:
         JSON response containing the exported package with metadata
     """
+    # Validate package name
+    if not package_name or len(package_name) > 100:
+        raise HTTPException(
+            status_code=400,
+            detail="Package name must be between 1 and 100 characters"
+        )
+    
     # Create package metadata
     export_data = {
         "package_name": package_name,
@@ -95,7 +102,6 @@ def export_package(package_name: str = "activities_package"):
     # Return the package as JSON
     return JSONResponse(
         content=export_data,
-        status_code=200,
         headers={
             "X-Package-Name": package_name,
             "X-Export-Format": "XMGR"
