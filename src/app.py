@@ -7,9 +7,11 @@ for extracurricular activities at Mergington High School.
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 import os
 from pathlib import Path
+from datetime import datetime
+import json
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
@@ -65,3 +67,45 @@ def signup_for_activity(activity_name: str, email: str):
     # Add student
     activity["participants"].append(email)
     return {"message": f"Signed up {email} for {activity_name}"}
+
+
+@app.post("/xmgr/export-package")
+def export_package(package_name: str = "activities_package"):
+    """
+    Export activities as a package using XMGR format.
+    
+    This endpoint exports all activities data as a structured package
+    that can be imported or transferred to other systems.
+    
+    Args:
+        package_name: Name of the package to export (default: "activities_package")
+    
+    Returns:
+        JSON response containing the exported package with metadata
+    """
+    try:
+        # Create package metadata
+        export_data = {
+            "package_name": package_name,
+            "export_timestamp": datetime.now().isoformat(),
+            "version": "1.0",
+            "format": "XMGR",
+            "total_activities": len(activities),
+            "activities": activities
+        }
+        
+        # Return the package as JSON
+        return JSONResponse(
+            content=export_data,
+            status_code=200,
+            headers={
+                "Content-Type": "application/json",
+                "X-Package-Name": package_name,
+                "X-Export-Format": "XMGR"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to export package: {str(e)}"
+        )
